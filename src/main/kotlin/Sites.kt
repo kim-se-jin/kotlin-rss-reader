@@ -15,6 +15,7 @@ class Sites {
             allPostList.addAll(Post(channel).parsingPost()) // post를 만들어서 해야할지 함수를 직접호출하는 게 맞을지
         }
         sortByDate()
+        filterByKeyword(allPostList, "국내")
     }
 
     fun parsingChannel(url: String): Node {
@@ -33,5 +34,13 @@ class Sites {
 //        for (post in allPostList) {
 //            println(post.pubDate)
 //        }
+    }
+
+    fun filterByKeyword(
+        mAllPostList: MutableList<PostInfo>,
+        keyword: String,
+    ): List<PostInfo> {
+        val filteredPosts = mAllPostList.filter { it.title.contains(keyword, true) }
+        return filteredPosts
     }
 }

@@ -15,6 +15,6 @@
 - [x] feat: 각 사이트 파싱(Sites) 구현
 - [x] feat: 각 사이트 최신 게시글 목록 리스트(Post) 구현
 - [X] feat: 작성 날짜 기준 내림차순 정렬,최대 10개 구현
-- [ ] feat: 필터링 기능 구현
+- [x] feat: 필터링 기능 구현
 - [ ] feat: 입력 뷰(InputView, 키워드) 구현
 - [ ] feat: 출력 뷰(OutputView, 결과물) 구현
