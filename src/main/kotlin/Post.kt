@@ -6,7 +6,7 @@ class Post(
 ) {
     var postList: MutableList<PostInfo> = mutableListOf()
 
-    fun parsingPost() {
+    fun parsingPost(): MutableList<PostInfo> {
         val items = (channel as Element).getElementsByTagName("item")
         for (i in 0 until items.length) {
             val item = items.item(i) as Element
@@ -15,9 +15,8 @@ class Post(
             val itemDate = item.getElementsByTagName("pubDate").item(0).textContent
             val itemAuthor = item.getElementsByTagName("author").item(0).textContent
             postList.add(PostInfo(itemTitle, itemLink, itemDate, itemAuthor))
-            // println(itemTitle)
-            // println(itemLink)
         }
+        return postList
     }
 }
 
