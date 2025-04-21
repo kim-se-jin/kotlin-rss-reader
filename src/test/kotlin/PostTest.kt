@@ -1,4 +1,6 @@
 import io.kotest.matchers.shouldBe
+import model.Post
+import model.Sites
 import org.junit.jupiter.api.Test
 
 class PostTest {

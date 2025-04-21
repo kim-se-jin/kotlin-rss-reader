@@ -10,11 +10,11 @@
 - 기술 블로그가 n개 일 때 async, await
 
 # 요구사항 정의
-- [ ] RSS 사이트 3개 찾기
+- [x] RSS 사이트 2개 찾기
 
 - [x] feat: 각 사이트 파싱(Sites) 구현
 - [x] feat: 각 사이트 최신 게시글 목록 리스트(Post) 구현
 - [X] feat: 작성 날짜 기준 내림차순 정렬,최대 10개 구현
 - [x] feat: 필터링 기능 구현
-- [ ] feat: 입력 뷰(InputView, 키워드) 구현
-- [ ] feat: 출력 뷰(OutputView, 결과물) 구현
+- [x] feat: 입력 뷰(InputView, 키워드) 구현
+- [x] feat: 출력 뷰(OutputView, 결과물) 구현

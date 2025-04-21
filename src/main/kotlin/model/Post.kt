@@ -1,3 +1,6 @@
+package model
+
+import kotlinx.datetime.format.DateTimeComponents
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 
@@ -13,10 +16,17 @@ class Post(
             val itemTitle = item.getElementsByTagName("title").item(0).textContent
             val itemLink = item.getElementsByTagName("link").item(0).textContent
             val itemDate = item.getElementsByTagName("pubDate").item(0).textContent
-            val itemAuthor = item.getElementsByTagName("author").item(0).textContent
-            postList.add(PostInfo(itemTitle, itemLink, itemDate, itemAuthor))
+            val parseItemDate = parsingDate(itemDate)
+            // val itemAuthor = item.getElementsByTagName("author").item(0).textContent
+            val itemAuthor = "홍길동"
+            postList.add(PostInfo(itemTitle, itemLink, parseItemDate, itemAuthor))
         }
         return postList
+    }
+
+    fun parsingDate(itemDate: String): String {
+        val components = DateTimeComponents.Formats.RFC_1123.parse(itemDate)
+        return components.toLocalDate().toString()
     }
 }
 
