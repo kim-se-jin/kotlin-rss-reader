@@ -3,6 +3,7 @@ package controller
 import PostInfo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -19,7 +20,14 @@ class RssController {
     private val inputView = InputView()
     private val outputView = OutputView()
 
-    val siteLists = listOf("https://v2.velog.io/rss/euisuk-chung", "https://www.hankyung.com/feed/it")
+    val siteLists =
+        listOf(
+            "https://v2.velog.io/rss/euisuk-chung",
+            "https://www.hankyung.com/feed/it",
+            "https://www.hankyung.com/feed/all-news",
+            "https://www.hankyung.com/feed/finance",
+            "https://www.hankyung.com/feed/economy",
+        )
     var allPostList: MutableList<PostInfo> = mutableListOf()
 
     fun run() =
@@ -57,18 +65,12 @@ class RssController {
 
     suspend fun getPostList(): MutableList<PostInfo> =
         coroutineScope {
-            val newPostList: MutableList<PostInfo> = mutableListOf()
-
-            for (site in siteLists) {
-                val postLists = async { Sites(site).parsing() }
-                newPostList += postLists.await()
-            }
-
-            if (allPostList.isNotEmpty()) { // test code
-                val name = "title" + i++
-                newPostList.add(PostInfo(name, "link", "2025-04-22"))
-            }
-
+            val newPostList =
+                siteLists
+                    .map { site -> async { Sites(site).parsing() } }
+                    .awaitAll()
+                    .flatten()
+                    .toMutableList()
             return@coroutineScope newPostList
         }
 }

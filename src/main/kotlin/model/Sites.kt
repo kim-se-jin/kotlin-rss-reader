@@ -11,7 +11,7 @@ class Sites(
 ) {
     val factory = DocumentBuilderFactory.newInstance()
 
-    fun parsing(): MutableList<PostInfo> {
+    suspend fun parsing(): MutableList<PostInfo> {
         val xml = factory.newDocumentBuilder().parse(link)
         val channel = xml.getElementsByTagName("channel").item(0)
 
@@ -30,6 +30,8 @@ class Sites(
                     LocalDateTime.parse(it.textOf("pubDate"), DateTimeFormatter.RFC_1123_DATE_TIME).toString(),
                 ),
             )
+//            println("${it.textOf("link")} add complete")
+            // delay(1000L)
         }
 
         return filteredList
