@@ -1,33 +1,39 @@
 package model
 
-import kotlinx.coroutines.async
-import kotlinx.coroutines.runBlocking
-import org.w3c.dom.Node
+import PostInfo
+import org.w3c.dom.Element
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import javax.xml.parsers.DocumentBuilderFactory
 
-class Sites {
-    var siteList =
-        // listOf("https://www.hankyung.com/feed/it", "https://www.korea.kr/rss/policy.xml", "https://www.hankyung.com/feed/international")
-        listOf("https://v2.velog.io/rss/euisuk-chung", "https://www.hankyung.com/feed/it")
+class Sites(
+    val link: String,
+) {
     val factory = DocumentBuilderFactory.newInstance()
-    var allPostList = mutableListOf<PostInfo>()
 
-    fun parsingAll(): MutableList<PostInfo> {
-        runBlocking {
-            for (site in siteList) {
-                val channel = async { parsingChannel(site) }
-                allPostList.addAll(Post(channel.await()).parsingPost()) // post를 만들어서 해야할지 함수를 직접호출하는 게 맞을지
-            }
-        }
-        return allPostList
-    }
-
-    fun parsingChannel(url: String): Node {
-        val xml =
-            factory
-                .newDocumentBuilder()
-                .parse(url)
+    fun parsing(): MutableList<PostInfo> {
+        val xml = factory.newDocumentBuilder().parse(link)
         val channel = xml.getElementsByTagName("channel").item(0)
-        return channel
+
+        val items =
+            List(channel.childNodes.length) { channel.childNodes.item(it) }
+                .filterIsInstance<Element>()
+                .filter { it.tagName == "item" }
+
+        var filteredList: MutableList<PostInfo> = mutableListOf()
+
+        items.forEach {
+            filteredList.add(
+                PostInfo(
+                    it.textOf("title"),
+                    it.textOf("link"),
+                    LocalDateTime.parse(it.textOf("pubDate"), DateTimeFormatter.RFC_1123_DATE_TIME).toString(),
+                ),
+            )
+        }
+
+        return filteredList
     }
+
+    private fun Element.textOf(tagName: String): String = getElementsByTagName(tagName).item(0)?.textContent.orEmpty()
 }
