@@ -1,5 +1,7 @@
-package controller
+@file:Suppress("ktlint:standard:no-wildcard-imports")
 
+import controller.RssController
+import io.mockk.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -7,49 +9,79 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Test
-import kotlin.test.AfterTest
-import kotlin.test.BeforeTest
+import model.Sites
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.TestInstance
+import java.time.LocalDateTime
+import kotlin.test.Test
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class RssControllerTest {
     private val testDispatcher = StandardTestDispatcher()
-    private val rssController = RssController()
+    private lateinit var rssController: RssController
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    @BeforeTest
+    @BeforeAll
     fun setup() {
         Dispatchers.setMain(testDispatcher)
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    @AfterTest
+    @AfterAll
     fun tearDown() {
         Dispatchers.resetMain()
     }
 
+    @BeforeEach
+    fun init() {
+        rssController = RssController()
+    }
+
+    @Test
+    fun `getPostList should return combined list from all sites`() =
+        runTest {
+            // Arrange
+            val mockPost = PostInfo("Test Title", "http://test.com", LocalDateTime.now().toString())
+            mockkConstructor(Sites::class)
+            every { anyConstructed<Sites>().parsing() } returns listOf(mockPost)
+
+            // Act
+            val result = rssController.getPostList()
+
+            // Assert
+            Assertions.assertEquals(rssController.siteLists.size, result.size)
+            result.forEach {
+                Assertions.assertEquals("Test Title", it.title)
+            }
+
+            unmockkAll()
+        }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun getPostList_() =
+    fun `getNewPost should update allPostList with new posts`() =
         runTest {
-            val result = rssController.getPostList()
-            advanceUntilIdle()
-            assertTrue(result.isNotEmpty())
-//            var allPostList = listOf(PostInfo("title1","link","2025-04-22"),
-//                PostInfo("title2","link","2025-04-21"))
-//
-//            var newPostList:MutableList<PostInfo> = mutableListOf()
-//            val job =
-//                launch(Dispatchers.IO) {
-//                    delay(1000)
-//                    println("작업 완료")
-//                }
-//            job.join()
-//            assertTrue(job.isCompleted)
+            // Arrange
+            val initialPost = PostInfo("Initial Title", "http://initial.com", LocalDateTime.now().toString())
+            val newPost = PostInfo("New Title", "http://new.com", LocalDateTime.now().plusMinutes(1).toString())
 
-//            if (allPostList.isNotEmpty()) { // test code
-//                val name = "title" + i++
-//                newPostList.add(PostInfo(name, "link", "2025-04-22"))
-//            }
+            mockkConstructor(Sites::class)
+            every { anyConstructed<Sites>().parsing() } returnsMany
+                listOf(
+                    listOf(initialPost),
+                    listOf(initialPost, newPost),
+                )
+
+            rssController.allPostList = listOf(initialPost)
+
+            // Act
+            rssController.getNewPost()
+            advanceUntilIdle()
+
+            // Assert
+            Assertions.assertTrue(rssController.allPostList.contains(newPost))
+
+            unmockkAll()
         }
 }

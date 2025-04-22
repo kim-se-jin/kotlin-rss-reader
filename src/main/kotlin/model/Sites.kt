@@ -11,30 +11,30 @@ class Sites(
 ) {
     val factory = DocumentBuilderFactory.newInstance()
 
-    suspend fun parsing(): MutableList<PostInfo> {
+    fun parsing(): List<PostInfo> {
         val xml = factory.newDocumentBuilder().parse(link)
         val channel = xml.getElementsByTagName("channel").item(0)
 
         val items =
-            List(channel.childNodes.length) { channel.childNodes.item(it) }
+            (0 until channel.childNodes.length)
+                .asSequence()
+                .map { channel.childNodes.item(it) }
                 .filterIsInstance<Element>()
                 .filter { it.tagName == "item" }
 
-        var filteredList: MutableList<PostInfo> = mutableListOf()
-
-        items.forEach {
-            filteredList.add(
+        return items
+            .map { element ->
                 PostInfo(
-                    it.textOf("title"),
-                    it.textOf("link"),
-                    LocalDateTime.parse(it.textOf("pubDate"), DateTimeFormatter.RFC_1123_DATE_TIME).toString(),
-                ),
-            )
-//            println("${it.textOf("link")} add complete")
-            // delay(1000L)
-        }
-
-        return filteredList
+                    title = element.textOf("title"),
+                    link = element.textOf("link"),
+                    pubDate =
+                        LocalDateTime
+                            .parse(
+                                element.textOf("pubDate"),
+                                DateTimeFormatter.RFC_1123_DATE_TIME,
+                            ).toString(),
+                )
+            }.toList()
     }
 
     private fun Element.textOf(tagName: String): String = getElementsByTagName(tagName).item(0)?.textContent.orEmpty()
